@@ -12,7 +12,7 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(express.json());
 
 //Defino el puerto
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3500;
 
 app.listen(port, () => {
     console.log(`El servidor está funcionando en el puerto ${port}` )
