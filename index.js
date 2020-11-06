@@ -23,77 +23,85 @@ app.get('/', (req, res) => {
     res.sendFile(path.resolve(__dirname, "crearPersonas.html"))
 });
 
+function validar(body) 
+{
+    if (Object.keys(body).length < 4) 
+        {
+            dni_int = parseInt(body.dni);
+            
+            if (dni_int <= 999999999) 
+            {
+
+                if (body.apellido != "" && typeof body.apellido === 'string') 
+                {
+                    
+                    if ( typeof body.nombre ==='string') 
+                    {
+                        return true;
+                    }
+                 }
+             }
+          }
+return false;
+}
+    
+
 app.post('/', (req, res) => 
 {
     var nroEstado = 201;
     dni_int = parseInt(req.body.dni);
     try 
     {
-        if (Object.keys(req.body).length < 4) 
+        
+    if (validar(req.body))
+    {
+        var options = 
         {
-
-            if (dni_int <= 999999999) 
-            {
-
-                if (req.body.apellido != "" && typeof req.body.apellido === 'string') 
+            method: 'POST',
+            uri: 'https://reclutamiento-14cf7.firebaseio.com/personas.json',
+            body: 
                 {
-                    
-                    if ( typeof req.body.nombre ==='string') 
-                    {
-                        
-                        var options = 
-                        {
-                            method: 'POST',
-                            uri: 'https://reclutamiento-14cf7.firebaseio.com/personas.json',
-                            body: 
-                                {
-                                    nombre: req.body.nombre,
-                                    apellido: req.body.apellido,
-                                    dni: dni_int
-                                },
-                                json: true
-                         };
+                    nombre: req.body.nombre,
+                    apellido: req.body.apellido,
+                    dni: dni_int
+                },
+                json: true
+            };
 
-                        res.status(nroEstado).send
-                        ({
-                            nombre:req.body.nombre,
-                            apellido: req.body.apellido,
-                            dni: dni_int
-                        })
-                        rp(options)
-                            .then(function (rta) 
-                            {
-
-                            })
-                            .catch(function (error2) 
-                            {
-                                console.log('error: ' + error2)
-                            });
-                    } else 
-                    {
-                        nroEstado = 400 
-                          throw new Error("NOMBRE invalido");
-                    }
-                } else 
-                {
-                    nroEstado = 400 
-                    throw new Error("APELLIDO invalido");
-                }
-            } else 
+        rp(options)
+            .then(function (rta) 
             {
-                nroEstado = 400 
-                throw new Error("DNI invalido");              
-            }
+                res.status(nroEstado).send
+                ({
+                    nombre:req.body.nombre,
+                    apellido: req.body.apellido,
+                    dni: dni_int
+                })
+            })
+            .catch(function (error2) 
+            {
+                res.status(500).send("Error al realizar el POST: " + error2);
+                console.log('error: ' + error2)
+            });
         }
-        else 
+        else
         {
-            throw new Error("Demasiados argumentos");
+            nroEstado=400;
+            throw new Error ("Error al validar el body");
         }
+
     } catch (error) 
         {
-            if (nroEstado === 201)
-                nroEstado = 500 
+            if (nroEstado === 201) 
+           {
+                nroEstado = 500
+               console.log(error)
+               res.status(nroEstado).send("Error inesperado");
+           }
+            else
+           {
             console.log(error)
-            res.status(nroEstado).send("Error no previsto")
+            res.status(nroEstado).send(String(error));
+           }
         }
 });
